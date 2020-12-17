@@ -3,12 +3,15 @@ import distributions
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def distortion(X, assignments, centers):
-    deltas = X - centers[assignments,:]
+    deltas = X - centers[assignments, :]
     return np.sum(deltas * deltas)
+
 
 class BadCentroids(Exception):
     pass
+
 
 def kmeans(X, init_centroids):
     N = X.shape[0]
@@ -23,7 +26,7 @@ def kmeans(X, init_centroids):
         # E-step
         distances = np.zeros((N, K))
         for k in range(K):
-            distances[:,k] = centroids[k].distances(X)
+            distances[:, k] = centroids[k].distances(X)
         if np.any(np.isnan(distances)):
             raise BadCentroids
 
@@ -39,6 +42,7 @@ def kmeans(X, init_centroids):
 
     return assignments, centroids, distortions
 
+
 def kmeans_best_of_n(X, K, n_trials, dist_cls=None, debug=False):
     '''
     Tries 'n_trials' random initializations and returns
@@ -51,26 +55,28 @@ def kmeans_best_of_n(X, K, n_trials, dist_cls=None, debug=False):
         perm = np.random.permutation(X.shape[0])
         clusters = []
         for k in range(K):
-            clusters.append(dist_cls(X[perm[k],:]))
+            clusters.append(dist_cls(X[perm[k], :]))
         try:
             a, c, d = kmeans(X, clusters)
         except BadCentroids:
-            print 'Bad centroids, skipping'
+            print('Bad centroids, skipping')
             continue
 
         if debug:
-            print 'K-means trial {}: {}'.format(i+1, d[-1])
+            print('K-means trial {}: {}'.format(i + 1, d[-1]))
         if d_best is None or d[-1] < d_best:
             assignments, centroids, distortions = a, c, d
 
     return assignments, centroids, distortions
 
+
 def plot_kmeans(X, assignments, centroids):
     centers = np.vstack(c.mean for c in centroids)
     plt.figure()
-    plt.scatter(X[:,0], X[:,1], c=assignments)
-    plt.scatter(centers[:,0], centers[:,1], color='green', s=100)
+    plt.scatter(X[:, 0], X[:, 1], c=assignments)
+    plt.scatter(centers[:, 0], centers[:, 1], color='green', s=100)
     plt.title('K-means, distortion: {}'.format(distortion(X, assignments, centers)))
+
 
 if __name__ == '__main__':
     X = np.loadtxt('EMGaussian.data')
